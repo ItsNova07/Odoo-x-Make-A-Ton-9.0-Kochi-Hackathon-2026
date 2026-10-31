@@ -2,6 +2,18 @@
 
 All routes start with `/api`. Dates are `"YYYY-MM-DD"`, money is a plain number. Errors are `{ "detail": "message" }` (FastAPI validation errors, code 422, are a list).
 
+## Login required
+
+Every billing route needs `Authorization: Bearer <token>`, from `POST /api/auth/login` with `{ "identifier": "<username or email>", "password": "..." }` (Member 2's auth).
+
+| Who | Can do |
+|---|---|
+| admin | everything, including create/edit discounts |
+| staff | view discounts; run billing; view, confirm, cancel, send invoices; record and view payments; summary |
+| customer | none of these (gets 403) |
+
+No token or an expired one gives `401`; the wrong role gives `403`.
+
 ## Discounts
 
 | Method | Route | Notes |
@@ -143,3 +155,14 @@ Body:
 - The invoice becomes `paid` by itself when `balance_due` reaches 0
 
 List rows: `id`, `invoice_id`, `invoice_number`, `customer_name`, `method`, `amount`, `payment_date`, `note`.
+
+## Customer portal
+
+A logged-in **customer** sees only their own invoices. The username comes from their login token, never from the request.
+
+| Method | Route | Notes |
+|---|---|---|
+| GET | `/api/me/invoices?page=&page_size=` | Same shape as `/api/invoices`; confirmed, paid and cancelled only (no drafts) |
+| GET | `/api/me/invoices/{id}` | Same shape as `/api/invoices/{id}`; 404 if it isn't theirs |
+
+Admin and staff get `403` here (they use `/api/invoices`). Invoices are matched to customers by `customer_username`, copied from the subscription when billing runs. Subscriptions must be created with `customer_username` set to the customer's login username.

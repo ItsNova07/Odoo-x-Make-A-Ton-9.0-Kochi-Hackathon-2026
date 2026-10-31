@@ -74,6 +74,8 @@ class Subscription(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     subscription_number: Mapped[str] = mapped_column(String(40), unique=True, nullable=False, index=True)
     customer_name: Mapped[str] = mapped_column(String(150), nullable=False)
+    # Member 2's login username: the shared key between the two databases
+    customer_username: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     customer_email: Mapped[str | None] = mapped_column(String(200))
     plan_id: Mapped[int | None] = mapped_column(ForeignKey("plans.id"))
     status: Mapped[str] = mapped_column(String(20), default="draft", nullable=False)

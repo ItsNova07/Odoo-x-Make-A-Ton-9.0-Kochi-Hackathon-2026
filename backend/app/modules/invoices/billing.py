@@ -82,6 +82,7 @@ def build_invoice(
     invoice = Invoice(
         subscription_id=subscription.id,
         customer_name=subscription.customer_name,
+        customer_username=subscription.customer_username,
         customer_email=subscription.customer_email,
         period_start=period_start,
         period_end=period_end,

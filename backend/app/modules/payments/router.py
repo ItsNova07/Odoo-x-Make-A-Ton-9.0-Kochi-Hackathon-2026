@@ -3,6 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, selectinload
 
+from app.core.deps import require_role
 from app.db import get_db
 from app.modules.invoices.models import Invoice
 from app.modules.invoices.service import InvoiceRuleError
@@ -10,7 +11,8 @@ from app.modules.payments.models import Payment
 from app.modules.payments.schemas import PaymentCreate, PaymentMethod, PaymentOut, PaymentPage
 from app.modules.payments.service import record_payment, to_out
 
-router = APIRouter(tags=["Payments"])
+# Recording and viewing payments is for admin and staff only
+router = APIRouter(tags=["Payments"], dependencies=[Depends(require_role("admin", "staff"))])
 
 
 @router.post("/invoices/{invoice_id}/payments", response_model=PaymentOut, status_code=201)
