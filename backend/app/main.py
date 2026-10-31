@@ -21,7 +21,7 @@ from app import models  # noqa: F401
 from app.db import Base, engine
 from app.routes import router as catalog_router
 
-# Member 4: discounts, invoices, billing, payments
+# Member 4: quotations, discounts, invoices, billing, payments
 from app.modules.discounts import models as discount_models  # noqa: F401
 from app.modules.discounts.router import router as discounts_router
 from app.modules.invoices import models as invoice_models  # noqa: F401
@@ -29,6 +29,8 @@ from app.modules.invoices.portal import router as invoice_portal_router
 from app.modules.invoices.router import router as invoices_router
 from app.modules.payments import models as payment_models  # noqa: F401
 from app.modules.payments.router import router as payments_router
+from app.modules.quotations import models as quotation_models  # noqa: F401
+from app.modules.quotations.router import router as quotations_router
 
 
 # SQLite ignores foreign keys unless this is switched on for every connection
@@ -61,6 +63,7 @@ app.include_router(discounts_router, prefix="/api")
 app.include_router(invoices_router, prefix="/api")
 app.include_router(payments_router, prefix="/api")
 app.include_router(invoice_portal_router, prefix="/api")  # customers: /api/me/invoices
+app.include_router(quotations_router, prefix="/api")
 
 
 @app.get("/")

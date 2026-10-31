@@ -166,3 +166,52 @@ A logged-in **customer** sees only their own invoices. The username comes from t
 | GET | `/api/me/invoices/{id}` | Same shape as `/api/invoices/{id}`; 404 if it isn't theirs |
 
 Admin and staff get `403` here (they use `/api/invoices`). Invoices are matched to customers by `customer_username`, copied from the subscription when billing runs. Subscriptions must be created with `customer_username` set to the customer's login username.
+
+## Quotations
+
+Admin and staff only (customers get 403). Only the **admin** can create or edit templates.
+
+| Method | Route | Notes |
+|---|---|---|
+| GET | `/api/quotation-templates?active_only=` | Plain array |
+| GET | `/api/quotation-templates/{id}` | |
+| POST | `/api/quotation-templates` | Admin only |
+| PUT | `/api/quotation-templates/{id}` | Admin only; send all fields; set `is_active: false` to retire one |
+| POST | `/api/quotation-templates/{id}/use` | Creates a subscription in `quotation` status from the template |
+| GET | `/api/quotations?expired=&page=&page_size=` | Paginated |
+| GET | `/api/quotations/{subscription_id}` | |
+| POST | `/api/quotations/{subscription_id}/accept` | `quotation` → `confirmed`; refused once expired |
+
+Template body:
+
+```json
+{
+  "name": "CRM Starter Pack",
+  "description": "10 seats of CRM (Odoo edition)",
+  "plan_id": 1,
+  "validity_days": 30,
+  "is_active": true,
+  "lines": [ { "product_id": 1, "variant_id": 2, "quantity": 10, "tax_id": 1 } ]
+}
+```
+
+Template responses add `plan_name`, `billing_period`, each line's `product_name`, `variant_name` and today's `unit_price`, plus `estimated_total` (before discount and tax).
+
+Use-template body (username follows Member 2's rules: lowercase letters, digits, underscore):
+
+```json
+{ "customer_username": "sharma_traders", "customer_name": "Sharma Traders", "customer_email": "accounts@sharmatraders.in", "start_date": null, "notes": null }
+```
+
+Quotation response:
+
+```json
+{
+  "id": 1, "subscription_id": 13, "subscription_number": "SUB-0013", "subscription_status": "quotation",
+  "customer_username": "kerala_retail_group", "customer_name": "Kerala Retail Group",
+  "template_id": 2, "template_name": "Enterprise Yearly",
+  "valid_until": "2026-11-15", "is_expired": false, "total_before_tax": 40000.0
+}
+```
+
+Full flow: use template → accept → `POST /api/subscriptions/{id}/activate` (Member 3) → `POST /api/billing/run`.
