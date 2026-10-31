@@ -135,6 +135,12 @@ def list_taxes(db: Session = Depends(get_db)):
 # SUBSCRIPTIONS
 @router.post("/subscriptions", response_model=schemas.SubscriptionOut, status_code=201)
 def create_subscription(payload: schemas.SubscriptionCreate, db: Session = Depends(get_db)):
+    # Activation must go through the dedicated endpoint so dates are initialized.
+    if payload.status == "active":
+        raise HTTPException(
+            status_code=400,
+            detail="Use POST /api/subscriptions/{subscription_id}/activate to activate a subscription.",
+        )
     data = payload.model_dump(exclude={"lines"})
     obj = models.Subscription(**data)
     for line in payload.lines:
@@ -171,11 +177,12 @@ def update_subscription(subscription_id: int, payload: schemas.SubscriptionUpdat
     if not obj: raise HTTPException(404, "Subscription not found")
     updates = payload.model_dump(exclude_unset=True)
     requested_status = updates.pop("status", None)
+    if requested_status == "active":
+        raise HTTPException(
+            status_code=400,
+            detail="Use POST /api/subscriptions/{subscription_id}/activate to activate a subscription.",
+        )
     for key, value in updates.items(): setattr(obj, key, value)
-    if requested_status == "active" and obj.status != "active":
-        try: services.activate_subscription(db, obj)
-        except ValueError as exc: raise HTTPException(400, str(exc))
-        return obj
     if requested_status is not None: obj.status = requested_status
     commit_or_409(db); db.refresh(obj)
     return obj

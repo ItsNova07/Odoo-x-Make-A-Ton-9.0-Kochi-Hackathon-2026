@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
 
 BillingPeriod = Literal["daily", "weekly", "monthly", "yearly"]
-SubscriptionStatus = Literal["draft", "quotation", "confirmed", "active", "closed"]
+SubscriptionStatus = Literal["draft", "quotation", "confirmed", "closed"]  # active only via /activate
 
 
 class ORMModel(BaseModel):
