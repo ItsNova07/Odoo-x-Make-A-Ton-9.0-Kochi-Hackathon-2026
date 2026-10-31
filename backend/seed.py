@@ -83,9 +83,15 @@ def add_catalog(db):
     }
 
 
+def username_for(name):
+    """Sharma Traders -> sharma_traders (matches Member 2's username rules)."""
+    return "".join(ch if ch.isalnum() else "_" for ch in name.lower()).strip("_")[:30]
+
+
 def make_subscription(db, number, name, email, plan, start, lines, status="active"):
     subscription = m.Subscription(
         subscription_number=number, customer_name=name, customer_email=email,
+        customer_username=username_for(name),
         plan_id=plan.id, start_date=start, payment_terms=plan.payment_terms, status="draft",
     )
     for product, variant, quantity, tax in lines:
@@ -131,6 +137,7 @@ def add_big_load(db, c, count):
         start = TODAY - timedelta(days=i % 90)
         subscription = m.Subscription(
             subscription_number=f"SUB-L{i + 1:05d}", customer_name=f"Load Test Customer {i % 700}",
+            customer_username=f"load_customer_{i % 700}",
             plan_id=c["monthly"].id, status="active", start_date=start,
             next_invoice_date=start, payment_terms=15,
         )

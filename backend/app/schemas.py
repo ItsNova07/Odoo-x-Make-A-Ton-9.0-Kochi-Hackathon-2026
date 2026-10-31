@@ -132,6 +132,7 @@ class SubscriptionLineOut(ORMModel):
 
 class SubscriptionCreate(BaseModel):
     subscription_number: str = Field(min_length=1, max_length=40)
+    customer_username: str = Field(min_length=1, max_length=100)
     customer_name: str = Field(min_length=1, max_length=150)
     customer_email: str | None = None
     plan_id: int | None = None
@@ -145,6 +146,7 @@ class SubscriptionCreate(BaseModel):
 
 class SubscriptionUpdate(BaseModel):
     customer_name: str | None = None
+    customer_username: str | None = None
     customer_email: str | None = None
     plan_id: int | None = None
     status: SubscriptionStatus | None = None
@@ -158,6 +160,7 @@ class SubscriptionOut(ORMModel):
     id: int
     subscription_number: str
     customer_name: str
+    customer_username: str
     customer_email: str | None
     plan_id: int | None
     status: str

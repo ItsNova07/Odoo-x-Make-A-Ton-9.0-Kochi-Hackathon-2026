@@ -37,6 +37,7 @@ class Invoice(Base):
     )
     # Copied from the subscription, so the invoice keeps them even if the subscription changes
     customer_name: Mapped[str] = mapped_column(String(150), nullable=False, index=True)
+    customer_username: Mapped[str | None] = mapped_column(String(100), index=True)
     customer_email: Mapped[str | None] = mapped_column(String(200))
     period_start: Mapped[date] = mapped_column(Date, nullable=False)
     period_end: Mapped[date] = mapped_column(Date, nullable=False)

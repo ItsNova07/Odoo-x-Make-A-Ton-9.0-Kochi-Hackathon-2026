@@ -4,13 +4,15 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, selectinload
 
+from app.core.deps import require_role
 from app.db import get_db
 from app.modules.invoices import service
 from app.modules.invoices.billing import run_billing
 from app.modules.invoices.models import Invoice
 from app.modules.invoices.schemas import BillingRunOut, InvoiceDetail, InvoicePage, InvoiceSummary
 
-router = APIRouter(tags=["Invoices"])
+# Billing, invoices and the summary are for admin and staff only
+router = APIRouter(tags=["Invoices"], dependencies=[Depends(require_role("admin", "staff"))])
 
 
 def get_invoice_or_404(db: Session, invoice_id: int) -> Invoice:
