@@ -1,0 +1,23 @@
+<<<<<<< HEAD
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+frontend/node_modules/
+frontend/dist/
+*.db
+*.sqlite
+*.sqlite3
+.DS_Store
+=======
+venv/
+.venv/
+node_modules/
+__pycache__/
+*.db
+.env
+dist/
+>>>>>>> 8d9173b2e564fcd208e541743dbe853f25a62fe6
