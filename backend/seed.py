@@ -21,6 +21,9 @@ from app.modules.invoices.billing import run_billing
 from app.modules.invoices.models import Invoice
 from app.modules.payments.models import Payment
 from app.modules.payments.schemas import PaymentCreate
+from app.modules.quotations import service as quotation_service
+from app.modules.quotations.models import QuotationTemplate, QuotationTemplateLine
+from app.modules.quotations.schemas import UseTemplateIn
 
 TODAY = date.today()
 random.seed(7)  # same data every time, so the demo is predictable
@@ -151,6 +154,28 @@ def add_big_load(db, c, count):
     db.commit()
 
 
+def add_quotation_templates(db, c):
+    """Two ready-made offers, plus one quote created from a template (status: quotation)."""
+    starter = QuotationTemplate(
+        name="CRM Starter Pack", plan_id=c["monthly"].id, validity_days=30,
+        description="10 seats of CRM (Odoo edition) with extra storage",
+        lines=[QuotationTemplateLine(product_id=c["crm"].id, variant_id=c["odoo"].id, quantity=10, tax_id=c["gst"].id),
+               QuotationTemplateLine(product_id=c["storage"].id, quantity=1, tax_id=c["gst"].id)],
+    )
+    enterprise = QuotationTemplate(
+        name="Enterprise Yearly", plan_id=c["yearly"].id, validity_days=15,
+        description="CRM and Accounting for larger teams, billed yearly",
+        lines=[QuotationTemplateLine(product_id=c["crm"].id, variant_id=c["standard"].id, quantity=25, tax_id=c["gst"].id),
+               QuotationTemplateLine(product_id=c["accounting"].id, quantity=10, tax_id=c["gst"].id)],
+    )
+    db.add_all([starter, enterprise])
+    db.commit()
+    quotation_service.use_template(db, enterprise, UseTemplateIn(
+        customer_username="kerala_retail_group", customer_name="Kerala Retail Group",
+        customer_email="procurement@keralaretail.in",
+    ))
+
+
 def confirm_and_collect(db):
     """Confirm the invoices, then pay some fully, some partly, and leave some overdue."""
     invoices = db.query(Invoice).filter(Invoice.status == "draft").order_by(Invoice.id).all()
@@ -204,6 +229,7 @@ def main():
 
         catalog = add_catalog(db)
         add_demo_subscriptions(db, catalog)
+        add_quotation_templates(db, catalog)
         if args.big:
             add_big_load(db, catalog, args.big)
 
