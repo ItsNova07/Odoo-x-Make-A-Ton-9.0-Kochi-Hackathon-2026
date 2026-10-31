@@ -50,6 +50,9 @@ class Invoice(Base):
     total: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=0, nullable=False)
     amount_paid: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=0, nullable=False)
     sent_at: Mapped[datetime | None] = mapped_column(DateTime)
+    # Overdue reminders (automation): when the last one went out, and how many so far
+    reminder_sent_at: Mapped[datetime | None] = mapped_column(DateTime)
+    reminder_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     subscription = relationship("Subscription")

@@ -215,3 +215,29 @@ Quotation response:
 ```
 
 Full flow: use template → accept → `POST /api/subscriptions/{id}/activate` (Member 3) → `POST /api/billing/run`.
+
+## Automation
+
+The server runs three jobs **by itself**: once when it starts (to catch up anything missed while it was off), then every 24 hours.
+
+1. **Billing:** creates every invoice that is due (same engine as `POST /api/billing/run`)
+2. **Auto-close:** active subscriptions past their end date become `closed`, only after their last period is billed
+3. **Overdue reminders:** emails the customer about each overdue invoice, at most once every 3 days per invoice (needs Mailpit running locally; if it isn't, the run notes it and retries next time)
+
+| Method | Route | Who |
+|---|---|---|
+| GET | `/api/automation` | admin, staff: `enabled`, `interval_hours`, `running`, `next_run_at`, `last_run` |
+| POST | `/api/automation/run` | admin: run all three now, returns the result |
+
+`last_run` / run result:
+
+```json
+{
+  "started_at": "2026-10-31T09:35:13", "finished_at": "2026-10-31T09:35:13", "trigger": "server start",
+  "invoices_created": 0, "subscriptions_closed": ["SUB-0007"],
+  "reminders_sent": 5, "reminders_failed": 0, "reminders_skipped_no_email": 2,
+  "notes": [], "error": null
+}
+```
+
+`trigger` is `server start`, `daily schedule` or `manual`. Invoices also gain `reminder_sent_at` and `reminder_count` in the database. Settings in `.env`: `AUTOMATION_ENABLED`, `AUTOMATION_INTERVAL_HOURS`, `REMINDER_EVERY_DAYS`.
