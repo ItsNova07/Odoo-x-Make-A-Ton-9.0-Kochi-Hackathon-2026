@@ -11,25 +11,17 @@
 import * as mock from "./mockData.js";
 import { ApiError } from "./ApiError.js";
 
+// GitHub Pages demo mode: use the bundled sample data because GitHub Pages
+// cannot run the FastAPI backend. Do not use this mode for real customer data.
 export const MOCK = {
-<<<<<<< HEAD
-  auth: false, // Member 2: /api/auth/*
-  users: false, // Member 2: /api/users/staff
-  customers: false, // Member 2: /api/customers, /api/me/customer
-  invoices: false, // Member 4: /api/invoices, /api/invoices/summary
-  subscriptions: false, // dashboard numbers: /api/dashboard/subscriptions
-  plans: false, // Member 3: /api/plans
-  // Still sample data: the backend has no route for these yet
-  mySubscription: true, // customer's own plan + "change my plan"
-=======
-  auth: true, // backend/app/modules/auth
-  users: true, // backend/app/modules/users
-  customers: true, // backend/app/modules/customers
-  invoices: true, // billing backend (Member 4's routes)
-  subscriptions: true, // subscriptions backend
-  plans: true, // plans catalogue
->>>>>>> 8d9173b2e564fcd208e541743dbe853f25a62fe6
-  payments: true, // customer's saved payment methods
+  auth: true,
+  users: true,
+  customers: true,
+  invoices: true,
+  subscriptions: true,
+  plans: true,
+  mySubscription: true,
+  payments: true,
 };
 
 // In dev, Vite forwards /api/* to http://localhost:8000 (see vite.config.js).
@@ -39,11 +31,7 @@ const BASE_URL = import.meta.env.VITE_API_URL || "/api";
 // FastAPI's OAuth2PasswordRequestForm expects form data with
 // "username" + "password". If Member 2 used a JSON body instead
 // ({ email, password }), set this to false.
-<<<<<<< HEAD
 const LOGIN_USES_FORM = false; // Member 2's /auth/login takes JSON: { identifier, password }
-=======
-const LOGIN_USES_FORM = true;
->>>>>>> 8d9173b2e564fcd208e541743dbe853f25a62fe6
 
 // All backend paths in one place. Ask Member 2 if any differ.
 const ENDPOINTS = {
@@ -51,7 +39,6 @@ const ENDPOINTS = {
   signup: "/auth/signup",
   forgotPassword: "/auth/forgot-password",
   resetPassword: "/auth/reset-password",
-<<<<<<< HEAD
   me: "/auth/me",
   users: "/users/staff",
   createStaff: "/users/staff",
@@ -67,17 +54,6 @@ const ENDPOINTS = {
   discounts: "/discounts",
   myInvoices: "/me/invoices",
   mySubscriptions: "/me/subscriptions",
-=======
-  me: "/users/me",
-  users: "/users",
-  createStaff: "/users/staff",
-  customers: "/customers",
-  customerMe: "/customers/me",
-  invoices: "/invoices",
-  invoiceSummary: "/invoices/summary",
-  subscriptionSummary: "/subscriptions/summary",
-  plans: "/plans",
->>>>>>> 8d9173b2e564fcd208e541743dbe853f25a62fe6
   mySubscription: "/subscriptions/me",
   changeMyPlan: "/subscriptions/me/change-plan",
   myPaymentMethods: "/payment-methods/me",
@@ -153,17 +129,12 @@ export async function login(email, password) {
   if (MOCK.auth) return mock.login(email, password);
   const result = LOGIN_USES_FORM
     ? await request(ENDPOINTS.login, { method: "POST", form: { username: email, password } })
-<<<<<<< HEAD
     : await request(ENDPOINTS.login, { method: "POST", body: { identifier: email, password } });
-=======
-    : await request(ENDPOINTS.login, { method: "POST", body: { email, password } });
->>>>>>> 8d9173b2e564fcd208e541743dbe853f25a62fe6
   return { token: result.access_token };
 }
 
 export function signup(details) {
   if (MOCK.auth) return mock.signup(details);
-<<<<<<< HEAD
   return request(ENDPOINTS.signup, {
     method: "POST",
     body: { username: usernameFromEmail(details.email), name: details.name, email: details.email, password: details.password },
@@ -178,9 +149,6 @@ export function usernameFromEmail(email) {
   if (!/^[a-z]/.test(name)) name = `user_${name}`;
   if (name.length < 3) name = `${name}_user`;
   return name.slice(0, 30);
-=======
-  return request(ENDPOINTS.signup, { method: "POST", body: details });
->>>>>>> 8d9173b2e564fcd208e541743dbe853f25a62fe6
 }
 
 export function forgotPassword(email) {
@@ -206,7 +174,6 @@ export async function getCurrentUser() {
 // Update the logged-in user's own details. Returns the updated user.
 export async function updateMe(details) {
   if (MOCK.auth) return mock.updateMe(tokenStore.get(), details);
-<<<<<<< HEAD
   try {
     const profile = await request(ENDPOINTS.customerMe, { method: "PATCH", body: { name: details.name } });
     return normaliseUser(profile);
@@ -214,10 +181,6 @@ export async function updateMe(details) {
     if (err.status === 403) throw new ApiError("Staff and admin names can't be changed here yet.", 403);
     throw err;
   }
-=======
-  const user = await request(ENDPOINTS.me, { method: "PATCH", body: details });
-  return normaliseUser(user);
->>>>>>> 8d9173b2e564fcd208e541743dbe853f25a62fe6
 }
 
 // Backends often call the name field full_name; accept either.
@@ -235,19 +198,14 @@ export async function getUsers() {
 
 export function createStaff(details) {
   if (MOCK.users) return mock.createStaff(details);
-<<<<<<< HEAD
   return request(ENDPOINTS.createStaff, {
     method: "POST",
     body: { username: usernameFromEmail(details.email), full_name: details.name, email: details.email, password: details.password },
   }).then(normaliseUser);
-=======
-  return request(ENDPOINTS.createStaff, { method: "POST", body: details });
->>>>>>> 8d9173b2e564fcd208e541743dbe853f25a62fe6
 }
 
 // ---------------- Customers ----------------
 
-<<<<<<< HEAD
 // Backend customers have address_line1 and no company field, so address maps to
 // address_line1 and company isn't stored yet.
 function toCustomer(c) {
@@ -282,21 +240,6 @@ export async function updateCustomer(id, details) {
     body: { name: details.name, email: details.email, phone: details.phone || null, address_line1: details.address || null },
   });
   return toCustomer(updated);
-=======
-export function getCustomers() {
-  if (MOCK.customers) return mock.getCustomers();
-  return request(ENDPOINTS.customers);
-}
-
-export function createCustomer(details) {
-  if (MOCK.customers) return mock.createCustomer(details);
-  return request(ENDPOINTS.customers, { method: "POST", body: details });
-}
-
-export function updateCustomer(id, details) {
-  if (MOCK.customers) return mock.updateCustomer(id, details);
-  return request(`${ENDPOINTS.customers}/${id}`, { method: "PUT", body: details });
->>>>>>> 8d9173b2e564fcd208e541743dbe853f25a62fe6
 }
 
 export function deleteCustomer(id) {
@@ -304,7 +247,6 @@ export function deleteCustomer(id) {
   return request(`${ENDPOINTS.customers}/${id}`, { method: "DELETE" });
 }
 
-<<<<<<< HEAD
 export async function getMyCustomerProfile() {
   if (MOCK.customers) return mock.getMyCustomerProfile();
   return toCustomer(await request(ENDPOINTS.customerMe));
@@ -317,16 +259,6 @@ export async function updateMyCustomerProfile(details) {
     body: { phone: details.phone || null, address_line1: details.address || null },
   });
   return toCustomer(updated);
-=======
-export function getMyCustomerProfile() {
-  if (MOCK.customers) return mock.getMyCustomerProfile();
-  return request(ENDPOINTS.customerMe);
-}
-
-export function updateMyCustomerProfile(details) {
-  if (MOCK.customers) return mock.updateMyCustomerProfile(details);
-  return request(ENDPOINTS.customerMe, { method: "PUT", body: details });
->>>>>>> 8d9173b2e564fcd208e541743dbe853f25a62fe6
 }
 
 // ---------------- Invoices ----------------
@@ -335,12 +267,8 @@ export function updateMyCustomerProfile(details) {
 
 export function getInvoices(filters = {}) {
   if (MOCK.invoices) return mock.getInvoices(filters);
-<<<<<<< HEAD
   const { customer_id, ...rest } = filters; // the backend searches by name/email with ?customer=
   return request(`${ENDPOINTS.invoices}${toQuery(rest)}`);
-=======
-  return request(`${ENDPOINTS.invoices}${toQuery(filters)}`);
->>>>>>> 8d9173b2e564fcd208e541743dbe853f25a62fe6
 }
 
 // { revenue, outstanding, overdue_count, overdue_amount, overdue_invoices[],
@@ -364,7 +292,6 @@ export function getSubscriptionSummary({ to_date } = {}) {
   return request(`${ENDPOINTS.subscriptionSummary}${toQuery({ to_date })}`);
 }
 
-<<<<<<< HEAD
 
 // ---------------- Connected operational lists ----------------
 
@@ -392,14 +319,11 @@ export function getMySubscriptions() {
   return request(ENDPOINTS.mySubscriptions);
 }
 
-=======
->>>>>>> 8d9173b2e564fcd208e541743dbe853f25a62fe6
 // ---------------- Plans ----------------
 // Plan: { id, name, description, price, billing_cycle: "monthly" | "quarterly" | "yearly",
 //         features: string[], trial_days, is_public, subscriber_count }
 
 // public_only: true for the customer view (only plans customers can choose)
-<<<<<<< HEAD
 // Member 3's plans use billing_period and is_active; the pages use billing_cycle and
 // is_public. Trial days aren't stored by the backend yet, so they come back as 0.
 function toPlan(p, subscriberCounts = {}) {
@@ -452,21 +376,6 @@ export async function updatePlan(id, changes) {
     activeSubscribersByPlan(),
   ]);
   return toPlan(updated, counts);
-=======
-export function getPlans({ public_only = false } = {}) {
-  if (MOCK.plans) return mock.getPlans({ public_only });
-  return request(`${ENDPOINTS.plans}${toQuery({ public_only: public_only || undefined })}`);
-}
-
-export function createPlan(details) {
-  if (MOCK.plans) return mock.createPlan(details);
-  return request(ENDPOINTS.plans, { method: "POST", body: details });
-}
-
-export function updatePlan(id, changes) {
-  if (MOCK.plans) return mock.updatePlan(id, changes);
-  return request(`${ENDPOINTS.plans}/${id}`, { method: "PATCH", body: changes });
->>>>>>> 8d9173b2e564fcd208e541743dbe853f25a62fe6
 }
 
 // ---------------- Customer: my subscription & payment methods ----------------
@@ -474,22 +383,14 @@ export function updatePlan(id, changes) {
 // { plan_id, plan_name, status, next_billing_date, scheduled_plan_id, scheduled_plan_name }
 // scheduled_* is a switch the customer chose that starts on next_billing_date.
 export function getMySubscription() {
-<<<<<<< HEAD
   if (MOCK.mySubscription) return mock.getMySubscription();
-=======
-  if (MOCK.subscriptions) return mock.getMySubscription();
->>>>>>> 8d9173b2e564fcd208e541743dbe853f25a62fe6
   return request(ENDPOINTS.mySubscription);
 }
 
 // Schedules a switch for the next billing date. Choosing the current plan
 // again cancels a scheduled switch.
 export function changeMyPlan(planId) {
-<<<<<<< HEAD
   if (MOCK.mySubscription) return mock.changeMyPlan(planId);
-=======
-  if (MOCK.subscriptions) return mock.changeMyPlan(planId);
->>>>>>> 8d9173b2e564fcd208e541743dbe853f25a62fe6
   return request(ENDPOINTS.changeMyPlan, { method: "POST", body: { plan_id: planId } });
 }
 
