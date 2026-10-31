@@ -1,9 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// GitHub Pages hosts this repository under /<REPOSITORY_NAME>/.
 export default defineConfig({
-  base: "/Odoo-x-Make-A-Ton-9.0-Kochi-Hackathon-2026/",
+  base: "./",
   plugins: [react()],
   server: {
     port: 5173,
